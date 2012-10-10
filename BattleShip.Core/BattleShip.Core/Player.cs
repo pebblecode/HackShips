@@ -56,9 +56,8 @@ namespace BattleShip.Core
             var rndAngleInRadians = rnd.NextDouble() * 2.0 * Math.PI;
 
             //create target zone
-            double newX = coordinate.Longitude - rndAngleInRadians * (1 - 2 * Math.Cos(Math.PI - rndAngleInRadians) * Math.Sin(Math.PI - rndAngleInRadians));
-            double newY = coordinate.Latitude + (2 * rndRadius * Math.Pow(Math.Cos(Math.PI - rndAngleInRadians), 2));
-
+            var coord = Helper.FromPolarToCartesian(rndRadius, rndAngleInRadians);
+            return new TargetZone(new GeoCoordinate(coordinate.Latitude + coord.Y, coordinate.Longitude + coord.X), radius);
         }
     }
 }

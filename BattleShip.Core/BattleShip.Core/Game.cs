@@ -72,6 +72,8 @@ namespace BattleShip.Core
             {
                 nextPlayerToTakeShot = Player1;
             }
+
+            return ShotResult.Hit;
         }
 
         private bool ShotOutsideTargetZone(Player targetPlayer, GeoCoordinate shotLocation)

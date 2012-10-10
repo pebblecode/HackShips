@@ -3,12 +3,18 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BattleShip.Core", "BattleShip.Core\BattleShip.Core.csproj", "{DA5A3694-33AB-4F9A-8F07-02E991FFA71B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{828B36AD-F7C5-4750-808B-B1F31C2675F4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{828B36AD-F7C5-4750-808B-B1F31C2675F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{828B36AD-F7C5-4750-808B-B1F31C2675F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{828B36AD-F7C5-4750-808B-B1F31C2675F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{828B36AD-F7C5-4750-808B-B1F31C2675F4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DA5A3694-33AB-4F9A-8F07-02E991FFA71B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DA5A3694-33AB-4F9A-8F07-02E991FFA71B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DA5A3694-33AB-4F9A-8F07-02E991FFA71B}.Release|Any CPU.ActiveCfg = Release|Any CPU
