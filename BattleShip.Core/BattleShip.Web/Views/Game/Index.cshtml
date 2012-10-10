@@ -1,0 +1,48 @@
+﻿@section scripts
+{
+    <script type="text/javascript">
+        $("#initiate-dialog").dialog({ modal: true });
+        $("#InitiateGame").click(function () {
+            var data = { 
+                name: $("#GameName").val().toString(),
+                myemail: $("#MyEmail").val().toString(),
+                opponentemail: $("#OpponentEmail").val().toString()
+            };
+            $.ajax({
+                url: "/Game/Create",
+                type: "get",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                data: data,
+                success: function (response, textStatus, jqXHR) {
+                    // check if failed or not and inform the user
+                    // 
+                }
+            });
+            $("#initiate-dialog").dialog("close");
+        });
+        google.maps.event.addDomListener(window, 'load', LondonShips.Init);
+    </script>
+}
+
+<div id="game-map">
+</div>
+                    
+<div class="main wrapper clearfix">
+
+    <article>
+        <h3>A few instructions</h3>
+        <p>…</p>
+    </article>
+                
+    <aside>
+        <h3>Game history</h3>
+        <p>...</p>
+    </aside>
+
+	<article>
+        <h3>A little bit of history</h3>
+        <p>…</p>
+    </article>
+
+</div>

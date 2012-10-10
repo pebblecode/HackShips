@@ -1,0 +1,43 @@
+﻿@section scripts
+{
+    <script type="text/javascript">
+        $("#initiate-dialog").dialog({ modal: true });
+        $("#InitiateGame").click(function () {
+            var data = {
+                name: $("#GameName").val().toString(),
+                myemail: $("#MyEmail").val().toString(),
+                opponentemail: $("#OpponentEmail").val().toString()
+            };
+            $.ajax({
+                url: "/Game/Create",
+                type: "get",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                data: data,
+                success: function (response, textStatus, jqXHR) {
+                    // check if failed or not and inform the user
+                    window.location = "/Game";
+                }
+            });
+            $("#initiate-dialog").dialog("close");
+        });
+    </script>
+}
+
+<div id="initiate-dialog">
+    <form>
+        <fieldset>
+            <label>Game name</label>
+            <input type="text" id="GameName"/>    
+        </fieldset>
+        <fieldset>
+            <label>Your email</label>
+            <input type="text" id="MyEmail"/>    
+        </fieldset>
+        <fieldset>
+            <label>Opponent email</label>
+            <input type="text" id="OpponentEmail"/>    
+        </fieldset>
+        <input type="button" id="InitiateGame" value="Initiate game"/>
+    </form>
+</div>

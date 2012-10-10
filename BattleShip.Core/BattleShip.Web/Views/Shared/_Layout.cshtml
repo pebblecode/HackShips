@@ -1,0 +1,46 @@
+﻿<!DOCTYPE html>
+<html>
+    <head>
+        <title>PebbleCode LondonShip Game</title>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+        <link href='http://fonts.googleapis.com/css?family=Allerta+Stencil' rel='stylesheet' type='text/css'>
+		<link href='http://fonts.googleapis.com/css?family=Stardos+Stencil' rel='stylesheet' type='text/css'>
+        <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?key=AIzaSyCygukLlYi6AMx8TUuZGckKylcCIfb3Lks&sensor=false&region=GB"></script>
+        @Styles.Render("~/Content/css")
+        @Styles.Render("~/Content/themes/base/css")
+        @Scripts.Render("~/bundles/modernizr")
+    </head>
+    <body>
+        <div class="header-container">
+            <header class="wrapper clearfix">
+                <a href="/Home">
+                    <h1 class="title">BATTLESHIPS .V1</h1>
+                </a>
+                <nav>
+                    <ul>
+                        <li><a href="/Game/NewGame">NEW</a></li>
+                        <li><a href="#">HOW</a></li>
+                        <li><a href="#">ABOUT</a></li>
+                    </ul>
+                </nav>
+                                
+            </header>
+        </div>
+        <div class="main-container">
+            @RenderBody()
+        </div>
+        <div class="footer-container">
+            <footer class="wrapper">
+                <p>&copy; 2012 pebble {code} // battleships.v1 | <a href="http://pebblecode.com">who are we?</a></p>
+            </footer>
+        </div>
+        @Scripts.Render("~/bundles/jquery")
+        @Scripts.Render("~/bundles/jqueryui")
+        @Scripts.Render("~/bundles/londonships")
+        @RenderSection("scripts", required: false)
+    </body>
+</html>
