@@ -5,12 +5,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BattleShip.Core", "BattleSh
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{828B36AD-F7C5-4750-808B-B1F31C2675F4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp", "ConsoleApp\ConsoleApp.csproj", "{3880B4F6-D46C-48D9-AD3A-9651CBF64C96}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3880B4F6-D46C-48D9-AD3A-9651CBF64C96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3880B4F6-D46C-48D9-AD3A-9651CBF64C96}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3880B4F6-D46C-48D9-AD3A-9651CBF64C96}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3880B4F6-D46C-48D9-AD3A-9651CBF64C96}.Release|Any CPU.Build.0 = Release|Any CPU
 		{828B36AD-F7C5-4750-808B-B1F31C2675F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{828B36AD-F7C5-4750-808B-B1F31C2675F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{828B36AD-F7C5-4750-808B-B1F31C2675F4}.Release|Any CPU.ActiveCfg = Release|Any CPU

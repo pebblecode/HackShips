@@ -4,15 +4,15 @@ namespace BattleShip.Core
 
     public class Shot
     {
-        public Player Player { get; private set; }
+        public Player PlayerTakingShot { get; private set; }
 
         public GeoCoordinate Location { get; private set; }
 
         public ShotResult ShotResult { get; private set; }
 
-        public Shot(Player player, GeoCoordinate location, ShotResult shotResult)
+        public Shot(Player playerTakingShot, GeoCoordinate location, ShotResult shotResult)
         {
-            Player = player;
+            PlayerTakingShot = playerTakingShot;
             Location = location;
             ShotResult = shotResult;
         }

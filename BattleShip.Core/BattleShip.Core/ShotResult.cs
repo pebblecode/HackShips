@@ -6,6 +6,7 @@ namespace BattleShip.Core
         TargetHasNoLocation,
         OutsideTargetZone,
         Miss,
-        Hit
+        Hit,
+        GameAlreadyOver
     }
 }

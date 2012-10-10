@@ -3,6 +3,7 @@ namespace BattleShip.Core
     using System;
     using System.Collections.Generic;
     using System.Device.Location;
+    using System.Linq;
 
     public class Game
     {
@@ -20,9 +21,9 @@ namespace BattleShip.Core
 
         public Player Player2 { get; private set; }
 
-        public Game(Guid id, string name, Player initiatingPlayer, Player acceptingPlayer, double playerTargetZoneRadius, double shotBlastRadius)
+        public Game(string name, Player initiatingPlayer, Player acceptingPlayer, double playerTargetZoneRadius, double shotBlastRadius)
         {
-            Id = id;
+            Id = Guid.NewGuid();
             Name = name;
             Player1 = initiatingPlayer;
             Player2 = acceptingPlayer;
@@ -41,6 +42,11 @@ namespace BattleShip.Core
                 return ShotResult.IllegalPlayer; 
             }
 
+            if (LastShotWasHit())
+            {
+                return ShotResult.GameAlreadyOver;
+            }
+
             var targetPlayer = nextPlayerToTakeShot == Player1 ? Player2 : Player1;
             if (targetPlayer.Location == null)
             {
@@ -53,27 +59,24 @@ namespace BattleShip.Core
             }
 
             //Take shot
-            if (ShotOnTarget(targetPlayer, shotLocation))
-            {
-                //create hit host
-            }
-            else
-            {
-                //create miss shot
-            }
+            var shot = ShotOnTarget(targetPlayer, shotLocation) ? new Shot(playerTakingShot, shotLocation, ShotResult.Hit) : new Shot(playerTakingShot, shotLocation, ShotResult.Miss);
+
             //Push to stack 
-            
-            //swap next player
-            if (nextPlayerToTakeShot == Player1)
+            shots.Push(shot);
+
+            nextPlayerToTakeShot = targetPlayer;
+
+            return shot.ShotResult;
+        }
+
+        private bool LastShotWasHit()
+        {
+            if (!shots.Any())
             {
-                nextPlayerToTakeShot = Player2;
-            }
-            else
-            {
-                nextPlayerToTakeShot = Player1;
+                return false;
             }
 
-            return ShotResult.Hit;
+            return shots.Peek().ShotResult == ShotResult.Hit;
         }
 
         private bool ShotOutsideTargetZone(Player targetPlayer, GeoCoordinate shotLocation)
