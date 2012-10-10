@@ -9,9 +9,9 @@ namespace BattleShip.Core
     {
         private readonly Dictionary<Guid, Game> games = new Dictionary<Guid, Game>();
 
-        private const double PlayerTargetZoneRadius = 5;
+        public const double PlayerTargetZoneRadius = 5;
 
-        private const double ShotBlastRadius = 1;
+        public const double ShotBlastRadius = 1;
 
         public Guid CreateGame(string gameName, string initiatingPlayerName, string initiatingPlayerEmail, string acceptingPlayerName, string acceptingPlayerEmail)
         {
@@ -32,19 +32,45 @@ namespace BattleShip.Core
             player.UpdateLocation(location, PlayerTargetZoneRadius);
         }
 
+        public TargetZone GetOpponentTargetZone(Guid gameId, string requestPlayerEmail)
+        {
+            var game = FindGame(gameId);
+
+            return FindOpponentByPlayerEmail(game, requestPlayerEmail).TargetZone;
+        }
+
+        public ShotResult TakeShot(Guid gameId, string playerTakingShotEmail, GeoCoordinate shotLocation)
+        {
+            Player player;
+            var game = FindGameAndPlayer(gameId, playerTakingShotEmail, out player);
+
+            return game.TakeShot(player, shotLocation);
+        }
+
+        public string GetNextPlayerEmail(Guid gameId)
+        {
+            Game game = FindGame(gameId);
+
+            return game.NextPlayerToTakeShot.Email;
+        }
+
         private Game FindGameAndPlayer(Guid gameId, string playerEmail, out Player player)
+        {
+            Game game = FindGame(gameId);
+            player = FindPlayerByEmail(game, playerEmail);
+
+            return game;
+        }
+
+        private Game FindGame(Guid gameId)
         {
             Game game;
             if (games.TryGetValue(gameId, out game))
             {
-                player = FindPlayerByEmail(game, playerEmail);
-            } 
-            else
-            {
-                throw new InvalidOperationException("No such game");
+                return game;
             }
 
-            return game;
+            throw new InvalidOperationException("No such game");
         }
 
         private Player FindPlayerByEmail(Game game, string playerEmail)
@@ -62,32 +88,19 @@ namespace BattleShip.Core
             throw new InvalidOperationException("No such player.");
         }
 
-        public TargetZone GetOpponentTargetZone(Guid gameId, string requestPlayerEmail)
+        private Player FindOpponentByPlayerEmail(Game game, string playerEmail)
         {
-            Player player;
-            var game = FindGameAndPlayer(gameId, requestPlayerEmail, out player);
-
-            return player.TargetZone;
-        }
-
-        public ShotResult TakeShot(Guid gameId, string playerTakingShotEmail, GeoCoordinate shotLocation)
-        {
-            Player player;
-            var game = FindGameAndPlayer(gameId, playerTakingShotEmail, out player);
-
-            return game.TakeShot(player, shotLocation);
-        }
-
-        public string GetNextPlayerEmail(Guid gameId)
-        {
-            Game game;
-            
-            if (games.TryGetValue(gameId, out game))
+            if (game.Player1.Email == playerEmail)
             {
-                return game.NextPlayerToTakeShot.Email;
+                return game.Player2;
             }
 
-            return string.Empty;
+            if (game.Player2.Email == playerEmail)
+            {
+                return game.Player1;
+            }
+
+            throw new InvalidOperationException("No such player.");
         }
     }
 }
