@@ -1,8 +1,9 @@
-﻿var LondonShips = {
+﻿LondonShips = {
     Map: null,
     Circle: null,
-    HitRadius: 150,
+    BlastRadius: null,
     TargetZone: null,
+    IsItMyTurn: false,
     Init: function () {
 
         // Get target zone
@@ -14,27 +15,49 @@
 
                 // When done initialize global variable
                 LondonShips.TargetZone = {
-                    center: new google.maps.LatLng(response.Latitude, response.LongLongitude),
-                    radius: response.Radius
+                    center: new google.maps.LatLng(response.Latitude, response.Longitude),
+                    radius: response.Radius,
                 };
 
+                LondonShips.BlastRadius = response.BlastRadius;
+                
                 // Draw map
                 LondonShips.DrawMap();
 
                 // Add listener to the click event of the circle
                 google.maps.event.addListener(LondonShips.Circle, 'click', function (event) {
-                    LondonShips.Shoot(event.latLng);
+                    if (LondonShips.IsItMyTurn) {
+                        LondonShips.Shoot(event.latLng);
+                    } else {
+                        alert("It's not your turn!");
+                    }
                 });
             }
         });
 
+        window.setInterval("LondonShips.CheckIfItIsMyTurn();", 5000);
+    },
+    CheckIfItIsMyTurn: function () {
+        $.ajax({
+            url: "/Game/IsItMyTurn",
+            type: "get",
+            dataType: "json",
+            success: function (response, textStatus, jqXHR) {
+                if (response != LondonShips.IsItMyTurn) {
+                    LondonShips.IsItMyTurn = response;
+                    if (response == true) {
+                        alert("It's your turn!");
+                    }
+                }
+            }
+        });
     },
     DrawMap: function () {
 
 
         // Define map
         var mapOptions = {
-            zoom: 15,
+            zoom: 13,
             center: LondonShips.TargetZone.center,
             mapTypeId: google.maps.MapTypeId.ROADMAP
         };
@@ -45,10 +68,10 @@
 
         // Define circle
         LondonShips.Circle = new google.maps.Circle({
-            strokeColor: "#4169e1",
+            strokeColor: "#006400",
             strokeOpacity: 0.8,
             strokeWeight: 2,
-            fillColor: "#1e90ff",
+            fillColor: "#006400",
             fillOpacity: 0.35,
             map: LondonShips.Map,
             center: LondonShips.TargetZone.center,
@@ -76,8 +99,14 @@
             }
         });
     },
+    DrawCircle: function () {
+
+       
+
+        
+    },
     Shoot: function (latLng) {
-        var coords = "{Lat: " + latLng.lat() + ", Long: " + latLng.lng() + "}";
+        var coords = "{longitude: " + latLng.lng() + ", latitude: " + latLng.lat() + "}";
         $.ajax({
             url: "/Game/Shoot",
             type: "post",
@@ -86,12 +115,18 @@
             data: coords,
             success: function (response, textStatus, jqXHR) {
                 // check if failed or not and inform the user
-                if (response.InTheTarget) {
-                    alert("Congrats.That was a hit!");
-                    LondonShips.DrawShapesWhenHit(latLng);
-                } else {
-                    alert("You missed!");
-                    LondonShips.DrawShapesWhenMiss(latLng);
+                switch (response) {
+                    case "Hit":
+                        LondonShips.DrawShapesWhenHit(latLng);
+                        break;
+                    case "Miss":
+                        LondonShips.DrawShapesWhenMiss(latLng);
+                        break;
+                    case "GameAlreadyOver":
+                        alert("You lost. Game is already over!");
+                        window.location = "/";
+                        break;
+                        
                 }
             }
         });
@@ -121,7 +156,7 @@
             fillOpacity: 0.40,
             map: LondonShips.Map,
             center: latLng,
-            radius: LondonShips.HitRadius
+            radius: LondonShips.BlastRadius
         });
 
     },

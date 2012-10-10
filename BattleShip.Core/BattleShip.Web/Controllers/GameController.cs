@@ -53,12 +53,26 @@ namespace BattleShip.Web.Controllers
             return this.View();
         }
 
+        public JsonResult IsItMyTurn()
+        {
+            Guid? gameId = this.Session[MagicStrings.SessionGameId] as Guid?;
+            string email = this.Session[MagicStrings.SessionPlayerEmail].ToString();
+
+            var nextPlayerEmail = MvcApplication.GameHost.GetNextPlayerEmail(gameId.Value);
+            if (nextPlayerEmail == email)
+            {
+                return this.Json(true, JsonRequestBehavior.AllowGet);
+            }
+
+            return this.Json(false, JsonRequestBehavior.AllowGet);
+        }
+
         public ActionResult JoinGame(string gameId, string email)
         {
             this.Session[MagicStrings.SessionGameId] = Guid.Parse(gameId);
             this.Session[MagicStrings.SessionPlayerEmail] = email;
 
-            return this.Index();
+            return this.View("Index");
         }
 
         public ActionResult Index()
@@ -67,13 +81,18 @@ namespace BattleShip.Web.Controllers
         }
 
         [HttpPost]
-        public JsonResult Shoot(GeoCoordinates latLong)
+        public JsonResult Shoot(double latitude, double longitude)
         {
+            Guid? gameId = this.Session[MagicStrings.SessionGameId] as Guid?;
+            string email = this.Session[MagicStrings.SessionPlayerEmail].ToString();
+
+            var shot = MvcApplication.GameHost.TakeShot(gameId.Value, email, new GeoCoordinate(latitude, longitude));
+            
             var model = new ShootVModel()
                             {
-                                InTheTarget = false
+                                InTheTarget = (shot == ShotResult.Hit)
                             };
-            return this.Json(model, JsonRequestBehavior.AllowGet);
+            return this.Json(shot.ToString(), JsonRequestBehavior.AllowGet);
         }
 
         public JsonResult GetTargetZone()
@@ -81,11 +100,13 @@ namespace BattleShip.Web.Controllers
             Guid? gameId = this.Session[MagicStrings.SessionGameId] as Guid?;
             string email = this.Session[MagicStrings.SessionPlayerEmail].ToString();
             TargetZone targetZone = MvcApplication.GameHost.GetOpponentTargetZone(gameId.Value, email);
+            double blastRadius = GameHost.ShotBlastRadius;
             var model = new GetTargetZoneVModel()
                             {
                                 Latitude = targetZone.Center.Latitude,
                                 Longitude = targetZone.Center.Longitude,
-                                Radius = ConvertGeoDistanceToMeters(targetZone.Radius)
+                                Radius = ConvertGeoDistanceToMeters(targetZone.Center, targetZone.Radius),
+                                BlastRadius = ConvertGeoDistanceToMeters(targetZone.Center, blastRadius)
                             };
             return this.Json(model, JsonRequestBehavior.AllowGet);
         }
@@ -98,18 +119,15 @@ namespace BattleShip.Web.Controllers
         private GeoCoordinate GetRandomCenter()
         {
             var rand = new Random();
-            return new GeoCoordinate(
-                LatMin + (LatMax - LatMin) * rand.NextDouble(),
-                LongMin + (LongMax - LongMin) * rand.NextDouble()
-                );
-
+            double latitude = LatMin + (LatMax - LatMin)*rand.NextDouble();
+            double longitude = LongMin + (LongMax - LongMin) * rand.NextDouble();
+            return new GeoCoordinate(latitude,longitude);
         }
 
-        private double ConvertGeoDistanceToMeters(double geodistance)
+        private double ConvertGeoDistanceToMeters(GeoCoordinate center, double geodistance)
         {
-            var start = new GeoCoordinate(0.0, 0.0);
-            var end = new GeoCoordinate(0.0, geodistance);
-            return start.GetDistanceTo(end);
+            var newnextPoint = new GeoCoordinate(center.Latitude, center.Longitude + geodistance);
+            return center.GetDistanceTo(newnextPoint);
         }
 
     }

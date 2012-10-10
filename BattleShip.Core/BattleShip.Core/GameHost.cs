@@ -9,9 +9,9 @@ namespace BattleShip.Core
     {
         private readonly Dictionary<Guid, Game> games = new Dictionary<Guid, Game>();
 
-        public const double PlayerTargetZoneRadius = 0.1;
+        public const double PlayerTargetZoneRadius = 0.05;
 
-        public const double ShotBlastRadius = 0.01;
+        public const double ShotBlastRadius = 0.005;
 
         public Guid CreateGame(string gameName, string initiatingPlayerName, string initiatingPlayerEmail, string acceptingPlayerName, string acceptingPlayerEmail)
         {
