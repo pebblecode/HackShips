@@ -181,12 +181,12 @@
         LondonShips.Circle = new google.maps.Circle({
             strokeColor: "#000000",
             strokeOpacity: 0.8,
-            strokeWeight: 0,
+            strokeWeight: 1,
             fillColor: "#ffffff",
-            fillOpacity: 0.70,
+            fillOpacity: 0.40,
             map: LondonShips.Map,
             center: latLng,
-            radius: LondonShips.HitRadius
+            radius: LondonShips.BlastRadius
         });
 
     }
