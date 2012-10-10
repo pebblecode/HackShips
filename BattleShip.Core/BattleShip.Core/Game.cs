@@ -7,7 +7,7 @@ namespace BattleShip.Core
 
     public class Game
     {
-        private Player nextPlayerToTakeShot;
+        public Player NextPlayerToTakeShot { get; private set; }
 
         private readonly double playerTargetZoneRadius;
 
@@ -28,7 +28,7 @@ namespace BattleShip.Core
             Player1 = initiatingPlayer;
             Player2 = acceptingPlayer;
 
-            nextPlayerToTakeShot = acceptingPlayer;
+            NextPlayerToTakeShot = acceptingPlayer;
             this.playerTargetZoneRadius = playerTargetZoneRadius;
             this.shotBlastRadius = shotBlastRadius;
         }
@@ -37,7 +37,7 @@ namespace BattleShip.Core
 
         public ShotResult TakeShot(Player playerTakingShot, GeoCoordinate shotLocation)
         {
-            if (playerTakingShot != nextPlayerToTakeShot)
+            if (playerTakingShot != NextPlayerToTakeShot)
             {
                 return ShotResult.IllegalPlayer; 
             }
@@ -47,7 +47,7 @@ namespace BattleShip.Core
                 return ShotResult.GameAlreadyOver;
             }
 
-            var targetPlayer = nextPlayerToTakeShot == Player1 ? Player2 : Player1;
+            var targetPlayer = NextPlayerToTakeShot == Player1 ? Player2 : Player1;
             if (targetPlayer.Location == null)
             {
                 return ShotResult.TargetHasNoLocation;
@@ -64,7 +64,7 @@ namespace BattleShip.Core
             //Push to stack 
             shots.Push(shot);
 
-            nextPlayerToTakeShot = targetPlayer;
+            NextPlayerToTakeShot = targetPlayer;
 
             return shot.ShotResult;
         }
