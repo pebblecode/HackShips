@@ -11,7 +11,7 @@ namespace BattleShip.Core
 
         public const double PlayerTargetZoneRadius = 0.05;
 
-        public const double ShotBlastRadius = 0.005;
+        public const double ShotBlastRadius = 0.015;
 
         public Guid CreateGame(string gameName, string initiatingPlayerName, string initiatingPlayerEmail, string acceptingPlayerName, string acceptingPlayerEmail)
         {

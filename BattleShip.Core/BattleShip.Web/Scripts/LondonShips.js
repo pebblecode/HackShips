@@ -35,7 +35,7 @@
             }
         });
 
-        window.setInterval("LondonShips.CheckIfItIsMyTurn();", 5000);
+        window.setInterval("LondonShips.CheckIfItIsMyTurn();", 2000);
     },
     CheckIfItIsMyTurn: function () {
         $.ajax({
@@ -43,6 +43,7 @@
             type: "get",
             dataType: "json",
             success: function (response, textStatus, jqXHR) {
+                $(".header-container").css("background-color", (response == true ? "#006400" : "#DD0000"));
                 if (response != LondonShips.IsItMyTurn) {
                     LondonShips.IsItMyTurn = response;
                     if (response == true) {
