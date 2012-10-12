@@ -8,44 +8,31 @@ namespace BattleShip.Core
 
     public class Player
     {
-        private readonly Stack<GeoCoordinate> locationStack = new Stack<GeoCoordinate>();
+        private readonly double targetZoneRadius;
 
         public string Email { get; private set; }
 
         public string Name { get; private set; }
 
-        public IEnumerable<GeoCoordinate> LocationHistory 
-        {
-            get
-            {
-                return locationStack;
-            }
-        }
-
-        public GeoCoordinate Location 
-        { 
-            get
-            {
-                return locationStack.Any() ? locationStack.Peek() : null;
-            }
-        }
+        public GeoCoordinate Location { get; private set; }
 
         public TargetZone TargetZone { get; private set; }
 
-        public Player(string email, string name)
+        public Player(string email, string name, GeoCoordinate location, double targetZoneRadius)
         {
+            this.targetZoneRadius = targetZoneRadius;
             Email = email;
             Name = name;
+            Location = location;
+            TargetZone = null;
         }
 
-        public void UpdateLocation(GeoCoordinate coordinate, double radius)
+        public Player Apply(PlayerLocationUpdated playerLocationUpdated) 
         {
-            locationStack.Push(coordinate);
-
-            TargetZone = CreateRandomZoneAroundPlayer(coordinate, radius);
+            return new Player(Email, Name, playerLocationUpdated.Location, targetZoneRadius);
         }
 
-        private TargetZone CreateRandomZoneAroundPlayer(GeoCoordinate coordinate, double radius)
+        private TargetZone CreateRandomZoneAroundPlayer(double radius)
         {
             var rnd = new Random();
 
@@ -57,7 +44,7 @@ namespace BattleShip.Core
 
             //create target zone
             var coord = Helper.FromPolarToCartesian(rndRadius, rndAngleInRadians);
-            return new TargetZone(new GeoCoordinate(coordinate.Latitude + coord.Y, coordinate.Longitude + coord.X), radius);
+            return new TargetZone(new GeoCoordinate(Location.Latitude + coord.Y, Location.Longitude + coord.X), radius);
         }
     }
 }

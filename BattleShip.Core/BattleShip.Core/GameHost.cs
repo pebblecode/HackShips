@@ -1,9 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace BattleShip.Core
 {
-    using System.Device.Location;
+    public class GameService
+    {
+        GameHost gameHost = new GameHost(Enumerable.Empty<Game>());
+
+        public Guid ExecuteCommand(CreateGame createGame)
+        {
+            var guid = Guid.NewGuid();
+
+            var gameCreated = new GameCreated(
+                guid,
+                createGame.GameName,
+                createGame.InitiatingPlayerName,
+                createGame.InitiatingPlayerEmail,
+                createGame.AcceptingPlayerName,
+                createGame.AcceptingPlayerEmail);
+
+            gameHost = gameHost.Apply(gameCreated);
+
+            return guid;
+        }        
+    }
 
     public class GameHost
     {
@@ -13,23 +34,37 @@ namespace BattleShip.Core
 
         public const double ShotBlastRadius = 0.015;
 
-        public Guid CreateGame(string gameName, string initiatingPlayerName, string initiatingPlayerEmail, string acceptingPlayerName, string acceptingPlayerEmail)
+        public GameHost(IEnumerable<Game> games)
         {
-            var initiatingPlayer = new Player(initiatingPlayerEmail, initiatingPlayerName);
-            var acceptingPlayer = new Player(acceptingPlayerEmail, acceptingPlayerName);
-
-            var game = new Game(gameName, initiatingPlayer, acceptingPlayer, PlayerTargetZoneRadius, ShotBlastRadius);
-            games.Add(game.Id, game);
-
-            return game.Id;
+            this.games = games.ToDictionary(g => g.Id, g => g);
         }
 
-        public void SetPlayerLocation(Guid gameId, string playerEmail, GeoCoordinate location)
+        public GameHost Apply(GameCreated gameCreated)
         {
-            Player player;
+            var initiatingPlayer = new Player(gameCreated.InitiatingPlayerEmail, gameCreated.InitiatingPlayerName, null, PlayerTargetZoneRadius);
+            var acceptingPlayer = new Player(gameCreated.AcceptingPlayerEmail, gameCreated.AcceptingPlayerName, null, PlayerTargetZoneRadius);
 
-            var game = FindGameAndPlayer(gameId, playerEmail, out player);
-            player.UpdateLocation(location, PlayerTargetZoneRadius);
+            var game = new Game(gameCreated.GameName, acceptingPlayer, initiatingPlayer, null, PlayerTargetZoneRadius, ShotBlastRadius);
+
+            return new GameHost(games.Values.Concat(new[] { game }));
+        }
+
+        public GameHost Apply(PlayerLocationUpdated playerLocationUpdated)
+        {
+            var game = FindGame(playerLocationUpdated.GameId);
+
+            var newGame = game.Apply(playerLocationUpdated);
+
+            return UpdateGame(game);
+        }
+
+        public GameHost Apply(ShotTaken shotTaken)
+        {
+            var game = FindGame(shotTaken.GameId);
+
+            var newGame = game.Apply(shotTaken);
+
+            return UpdateGame(game);
         }
 
         public TargetZone GetOpponentTargetZone(Guid gameId, string requestPlayerEmail)
@@ -39,12 +74,11 @@ namespace BattleShip.Core
             return FindOpponentByPlayerEmail(game, requestPlayerEmail).TargetZone;
         }
 
-        public ShotResult TakeShot(Guid gameId, string playerTakingShotEmail, GeoCoordinate shotLocation)
+        private GameHost UpdateGame(Game newGame)
         {
-            Player player;
-            var game = FindGameAndPlayer(gameId, playerTakingShotEmail, out player);
+            var newGames = games.Values.Select(g => g.Id == newGame.Id ? newGame : g);
 
-            return game.TakeShot(player, shotLocation);
+            return new GameHost(newGames);
         }
 
         public string GetNextPlayerEmail(Guid gameId)
@@ -52,14 +86,6 @@ namespace BattleShip.Core
             Game game = FindGame(gameId);
 
             return game.NextPlayerToTakeShot.Email;
-        }
-
-        private Game FindGameAndPlayer(Guid gameId, string playerEmail, out Player player)
-        {
-            Game game = FindGame(gameId);
-            player = FindPlayerByEmail(game, playerEmail);
-
-            return game;
         }
 
         private Game FindGame(Guid gameId)
@@ -73,31 +99,16 @@ namespace BattleShip.Core
             throw new InvalidOperationException("No such game");
         }
 
-        private Player FindPlayerByEmail(Game game, string playerEmail)
-        {
-            if (game.Player1.Email == playerEmail)
-            {
-                return game.Player1;
-            }
-
-            if (game.Player2.Email == playerEmail)
-            {
-                return game.Player2;
-            }
-
-            throw new InvalidOperationException("No such player.");
-        }
-
         private Player FindOpponentByPlayerEmail(Game game, string playerEmail)
         {
-            if (game.Player1.Email == playerEmail)
+            if (game.NextPlayerToTakeShot.Email == playerEmail)
             {
-                return game.Player2;
+                return game.NextPlayerToTakeShot;
             }
 
-            if (game.Player2.Email == playerEmail)
+            if (game.Opponent.Email == playerEmail)
             {
-                return game.Player1;
+                return game.Opponent;
             }
 
             throw new InvalidOperationException("No such player.");

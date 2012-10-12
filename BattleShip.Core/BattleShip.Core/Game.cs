@@ -1,14 +1,10 @@
 namespace BattleShip.Core
 {
     using System;
-    using System.Collections.Generic;
     using System.Device.Location;
-    using System.Linq;
 
     public class Game
     {
-        public Player NextPlayerToTakeShot { get; private set; }
-
         private readonly double playerTargetZoneRadius;
 
         private readonly double shotBlastRadius;
@@ -17,66 +13,85 @@ namespace BattleShip.Core
 
         public string Name { get; private set; }
 
-        public Player Player1 { get; private set; }
+        public Player NextPlayerToTakeShot { get; private set; }
 
-        public Player Player2 { get; private set; }
+        public Player Opponent { get; private set; }
 
-        public Game(string name, Player initiatingPlayer, Player acceptingPlayer, double playerTargetZoneRadius, double shotBlastRadius)
+        public Shot LastShot { get; private set; }
+
+        public Game(string name, Player nextPlayerToTakeShot, Player opponent, Shot lastShot, double playerTargetZoneRadius, double shotBlastRadius)
         {
             Id = Guid.NewGuid();
             Name = name;
-            Player1 = initiatingPlayer;
-            Player2 = acceptingPlayer;
+            NextPlayerToTakeShot = nextPlayerToTakeShot;
+            Opponent = opponent;
+            LastShot = lastShot;
 
-            NextPlayerToTakeShot = acceptingPlayer;
             this.playerTargetZoneRadius = playerTargetZoneRadius;
             this.shotBlastRadius = shotBlastRadius;
         }
 
-        private readonly Stack<Shot> shots = new Stack<Shot>();
-
-        public ShotResult TakeShot(Player playerTakingShot, GeoCoordinate shotLocation)
+        public Game Apply(PlayerLocationUpdated playerLocationUpdated)
         {
-            if (playerTakingShot != NextPlayerToTakeShot)
+            var player = FindPlayerByEmail(playerLocationUpdated.PlayerEmail);
+
+            var newPlayer = player.Apply(playerLocationUpdated);
+            
+            return new Game(Name, player == NextPlayerToTakeShot ? newPlayer : NextPlayerToTakeShot, player == Opponent ? newPlayer : Opponent, LastShot, playerTargetZoneRadius, shotBlastRadius);
+        }
+
+        public Game Apply(ShotTaken shotTaken)
+        {
+            if (shotTaken.PlayerTakingShot.Email != NextPlayerToTakeShot.Email)
             {
-                return ShotResult.IllegalPlayer; 
+                return new Game(Name, NextPlayerToTakeShot, Opponent, new Shot(shotTaken.PlayerTakingShot, shotTaken.ShotLocation, ShotResult.IllegalPlayer), playerTargetZoneRadius, shotBlastRadius); 
             }
 
             if (LastShotWasHit())
             {
-                return ShotResult.GameAlreadyOver;
+                return new Game(Name, NextPlayerToTakeShot, Opponent, new Shot(shotTaken.PlayerTakingShot, shotTaken.ShotLocation, ShotResult.GameAlreadyOver), playerTargetZoneRadius, shotBlastRadius);
             }
 
-            var targetPlayer = NextPlayerToTakeShot == Player1 ? Player2 : Player1;
-            if (targetPlayer.Location == null)
+            if (Opponent.Location == null)
             {
-                return ShotResult.TargetHasNoLocation;
+                return new Game(Name, NextPlayerToTakeShot, Opponent, new Shot(shotTaken.PlayerTakingShot, shotTaken.ShotLocation, ShotResult.TargetHasNoLocation), playerTargetZoneRadius, shotBlastRadius);
             }
 
-            if (ShotOutsideTargetZone(targetPlayer, shotLocation))
+            if (ShotOutsideTargetZone(Opponent, shotTaken.ShotLocation))
             {
-                return ShotResult.OutsideTargetZone;
+                return new Game(Name, NextPlayerToTakeShot, Opponent, new Shot(shotTaken.PlayerTakingShot, shotTaken.ShotLocation, ShotResult.OutsideTargetZone), playerTargetZoneRadius, shotBlastRadius);
             }
 
-            //Take shot
-            var shot = ShotOnTarget(targetPlayer, shotLocation) ? new Shot(playerTakingShot, shotLocation, ShotResult.Hit) : new Shot(playerTakingShot, shotLocation, ShotResult.Miss);
+            var shot = ShotOnTarget(Opponent, shotTaken.ShotLocation) 
+                ? new Shot(shotTaken.PlayerTakingShot, shotTaken.ShotLocation, ShotResult.Hit) 
+                : new Shot(shotTaken.PlayerTakingShot, shotTaken.ShotLocation, ShotResult.Miss);
 
-            //Push to stack 
-            shots.Push(shot);
+            return new Game(Name, NextPlayerToTakeShot, Opponent, shot, playerTargetZoneRadius, shotBlastRadius);
+        }
 
-            NextPlayerToTakeShot = targetPlayer;
+        private Player FindPlayerByEmail(string playerEmail)
+        {
+            if (NextPlayerToTakeShot.Email == playerEmail)
+            {
+                return NextPlayerToTakeShot;
+            }
 
-            return shot.ShotResult;
+            if (Opponent.Email == playerEmail)
+            {
+                return Opponent;
+            }
+
+            throw new InvalidOperationException("No such player.");
         }
 
         private bool LastShotWasHit()
         {
-            if (!shots.Any())
+            if (LastShot == null)
             {
                 return false;
             }
 
-            return shots.Peek().ShotResult == ShotResult.Hit;
+            return LastShot.ShotResult == ShotResult.Hit;
         }
 
         private bool ShotOutsideTargetZone(Player targetPlayer, GeoCoordinate shotLocation)
