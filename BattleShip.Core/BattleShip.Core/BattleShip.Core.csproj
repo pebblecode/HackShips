@@ -41,9 +41,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Commands\CreateGame.cs" />
-    <Compile Include="Events\PlayerLocationUpdated.cs" />
-    <Compile Include="Events\GameCreated.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="GameHost.cs" />
     <Compile Include="Helper.cs" />
@@ -51,9 +48,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Shot.cs" />
     <Compile Include="ShotResult.cs" />
-    <Compile Include="Events\ShotTaken.cs" />
     <Compile Include="TargetZone.cs" />
-    <Compile Include="Commands\UpdatePlayerLocation.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
